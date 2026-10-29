@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MongoDB E-Commerce — Demo Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --mongodb-green: #00ED64;
+      --mongodb-dark: #0A192F;
+      --accent: #0086FF;
+      --text: #0F172A;
+      --muted: #64748B;
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --border: #E2E8F0;
+      --danger: #EF4444;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --radius: 12px;
+      --shadow: 0 4px 20px -6px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 40px -10px rgba(0,0,0,0.12);
+      --transition: 0.2s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.5;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+    img { max-width: 100%; display: block; }
+
+    /* ---------- Navbar ---------- */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 4.5rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      font-size: 1.35rem;
+      color: var(--mongodb-dark);
+    }
+    .brand-dot {
+      width: 10px; height: 10px;
+      background: var(--mongodb-green);
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(0,237,100,0.2);
+    }
+    .nav-links {
+      display: flex;
+      gap: 1.8rem;
+      align-items: center;
+    }
+    .nav-links a {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: color var(--transition);
+    }
+    .nav-links a:hover { color: var(--mongodb-green); }
+    .nav-links a.active { color: var(--mongodb-green); }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all var(--transition);
+    }
+    .btn-outline {
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      background: var(--card);
+    }
+    .btn-outline:hover { border-color: var(--mongodb-green); color: var(--mongodb-green); }
+    .btn-primary {
+      background: var(--mongodb-dark);
+      color: white;
+    }
+    .btn-primary:hover { background: #081527; transform: translateY(-1px); box-shadow: var(--shadow); }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+    .cart-badge {
+      width: 18px; height: 18px;
+      background: var(--danger);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: -6px; right: -6px;
+    }
+    .cart-btn {
+      position: relative;
+      color: var(--text);
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+    .cart-btn:hover { background: #F1F5F9; }
+
+    /* ---------- Mobile menu ---------- */
+    .mobile-menu-btn { display: none; font-size: 1.3rem; color: var(--text); }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      background: linear-gradient(135deg, var(--mongodb-dark) 0%, #12253F 100%);
+      color: white;
+      padding: 4rem 1.5rem;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 70% 30%, rgba(0,237,100,0.12) 0%, transparent 40%);
+      pointer-events: none;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto 1.75rem;
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ---------- Stats ---------- */
+    .stats {
+      background: var(--card);
+      border: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      padding: 2rem 1.5rem;
+      max-width: 1200px;
+      margin: -2rem auto 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .stat h3 { font-size: 1.75rem; font-weight: 700; color: var(--mongodb-dark); margin-bottom: 0.25rem; }
+    .stat p { color: var(--muted); font-size: 0.875rem; }
+
+    /* ---------- Layout ---------- */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+    .section { padding: 3rem 0; }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--mongodb-dark);
+    }
+    .section-title .icon { color: var(--mongodb-green); }
+
+    /* ---------- Product Grid ---------- */
+    .filters {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+    .filter-pill {
+      padding: 0.5rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--card);
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+    .filter-pill:hover { border-color: var(--mongodb-green); }
+    .filter-pill.active {
+      background: var(--mongodb-green);
+      color: white;
+      border-color: var(--mongodb-green);
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+    .product-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--mongodb-green); }
+    .product-image {
+      height: 190px;
+      background: #F1F5F9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; }
+    .badge-tag {
+      position: absolute;
+      top: 0.75rem; left: 0.75rem;
+      background: rgba(0,237,100,0.9);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .product-info { padding: 1rem; flex: 1; display: flex; flex-direction: column; }
+    .product-category {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 0.35rem;
+    }
+    .product-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .product-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      gap: 1rem;
+    }
+    .price {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--mongodb-dark);
+    }
+    .price .orig {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: line-through;
+      margin-left: 0.4rem;
+    }
+    .stock {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .stock.out { color: var(--danger); }
+    .add-to-cart {
+      margin-top: 0.75rem;
+      width: 100%;
+      background: var(--mongodb-dark);
+      color: white;
+      padding: 0.6rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: background var(--transition);
+    }
+    .add-to-cart:hover { background: #081527; }
+    .add-to-cart:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ---------- Product Detail Modal ---------- */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 500; display: none; align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card);
+      border-radius: var(--radius);
+      width: 100%; max-width: 900px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      animation: modalIn var(--transition);
+    }
+    @keyframes modalIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      width: 32px; height: 32px;
+      display: grid; place-items: center;
+      border-radius: 8px; color: var(--muted);
+      background: #F1F5F9;
+    }
+    .modal-close:hover { color: var(--text); background: #E2E8F0; }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 2rem; }
+    @media (max-width: 768px) { .modal-grid { grid-template-columns: 1fr; } }
+    .modal-image { height: 320px; border-radius: var(--radius); overflow: hidden; background: #F1F5F9; }
+    .modal-image img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .modal-desc { color: var(--muted); margin-bottom: 1rem; line-height: 1.6; }
+    .meta-row {
+      display: flex; justify-content: space-between; padding: 0.5rem 0;
+      border-bottom: 1px solid #F1F5F9; font-size: 0.9rem;
+    }
+    .meta-row .val { font-weight: 600; color: var(--mongodb-dark); }
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+    .qty-controls {
+      display: flex; align-items: center; gap: 0.5rem;
+      border: 1px solid var(--border); border-radius: 8px; padding: 0.25rem 0.5rem;
+    }
+    .qty-btn { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; color: var(--mongodb-dark); font-weight: 700; }
+    .qty-btn:hover { background: #F1F5F9; }
+    .qty-val { font-weight: 600; min-width: 20px; text-align: center; }
+
+    /* ---------- Cart ---------- */
+    .cart-empty {
+      text-align: center; padding: 4rem 1rem; color: var(--muted);
+    }
+    .cart-item {
+      display: flex; gap: 1rem; padding: 1rem 0;
+      border-bottom: 1px solid var(--border); align-items: center;
+    }
+    .cart-item-img { width: 70px; height: 70px; border-radius: 8px; overflow: hidden; background: #F1F5F9; flex-shrink: 0; }
+    .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-weight: 600; margin-bottom: 0.2rem; }
+    .cart-item-sku { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 0.4rem; }
+    .cart-item-price { font-weight: 700; color: var(--mongodb-dark); }
+    .cart-summary {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .cart-summary h3 { margin-bottom: 1rem; font-size: 1.1rem; color: var(--mongodb-dark); }
+    .summary-row { display: flex; justify-content: space-between; padding: 0.5rem 0; color: var(--text); }
+    .summary-row.total { font-weight: 700; font-size: 1.1rem; border-top: 2px solid var(--border); padding-top: 1rem; margin-top: 1rem; color: var(--mongodb-dark); }
+
+    /* ---------- Checkout ---------- */
+    .checkout-grid {
+      display: grid; grid-template-columns: 1fr 380px; gap: 2rem;
+      max-width: 900px; margin: 0 auto;
+    }
+    @media (max-width: 768px) { .checkout-grid { grid-template-columns: 1fr; } }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.9rem; color: var(--text); }
+    .form-control {
+      width: 100%; padding: 0.65rem 0.9rem; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 0.95rem; font-family: inherit;
+      transition: border-color var(--transition);
+    }
+    .form-control:focus { outline: none; border-color: var(--mongodb-green); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+    .form-note { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* ---------- Auth ---------- */
+    .auth-wrap { max-width: 400px; margin: 4rem auto; padding: 0 1rem; }
+    .auth-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow);
+    }
+    .auth-card h2 { margin-bottom: 1.5rem; color: var(--mongodb-dark); }
+    .auth-switch { margin-top: 1.25rem; font-size: 0.9rem; color: var(--muted); text-align: center; }
+    .auth-switch a { color: var(--mongodb-green); font-weight: 600; }
+
+    /* ---------- Analytics ---------- */
+    .analytics-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem;
+    }
+    .analytic-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .analytic-card .val { font-size: 1.75rem; font-weight: 700; color: var(--mongodb-dark); margin-bottom: 0.25rem; }
+    .analytic-card .lbl { font-size: 0.85rem; color: var(--muted); }
+    .chart-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; height: 300px; }
+    .chart-placeholder {
+      width: 100%; height: 100%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; color: var(--muted);
+      border: 2px dashed var(--border); border-radius: 8px;
+    }
+
+    /* ---------- Loading / Alerts ---------- */
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--border);
+      border-top-color: var(--mongodb-green);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      margin: 1rem auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-center { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem; color: var(--muted); }
+    .alert { padding: 0.85rem 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; display: none; }
+    .alert.show { display: block; }
+    .alert-error { background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA; }
+    .alert-success { background: #F0FDF4; color: var(--success); border: 1px solid #BBF7D0; }
+    .hidden { display: none !important; }
+    .text-green { color: var(--mongodb-green); }
+    .text-muted { color: var(--muted); }
+
+    /* ---------- Order status ---------- */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.25rem 0.7rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    }
+    .status-pending { background: #FEF3C7; color: #92400E; }
+    .status-processing { background: #DBEAFE; color: #1E40AF; }
+    .status-shipped { background: #E0E7FF; color: #3730A3; }
+    .status-delivered { background: #D1FAE5; color: #065F46; }
+    .status-cancelled { background: #FEE2E2; color: #991B1B; }
+    .status-returned { background: #F3E8FF; color: #6B21A8; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem; text-align: center; color: var(--muted);
+      font-size: 0.85rem; margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <span>MongoStore</span>
+      </div>
+      <div class="nav-links">
+        <a href="#home" class="nav-link active" data-nav="home">Home</a>
+        <a href="#products" class="nav-link" data-nav="products">Products</a>
+        <a href="#analytics" class="nav-link" data-nav="analytics">Analytics</a>
+        <a href="#orders" class="nav-link" data-nav="orders">Orders</a>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-outline cart-btn" id="cartBtn" aria-label="Cart">
+          🛒
+        </button>
+        <button class="btn btn-outline btn-sm" id="authBtn">Login</button>
+        <button class="btn btn-primary btn-sm" id="adminBtn" style="display:none;">Admin</button>
+        <button class="mobile-menu-btn" id="mobileMenu">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Alerts -->
+  <div id="alertError" class="alert alert-error"></div>
+  <div id="alertSuccess" class="alert alert-success"></div>
+
+  <!-- Hero -->
+  <section class="hero" id="home">
+    <h1>Modern E-Commerce<br><span style="color:var(--mongodb-green)">Backend Demo</span></h1>
+    <p>A production-style REST API built with Node.js, Express, Mongoose &amp; MongoDB — demonstrating CRUD, indexing, analytics, auth, and replication.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="showSection('products')">Browse Products</button>
+      <button class="btn btn-outline" onclick="showSection('analytics')">View Analytics</button>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats" id="statsSection">
+    <div class="stat"><div class="val" id="statProducts">–</div><p>Products</p></div>
+    <div class="stat"><div class="val" id="statOrders">–</div><p>Orders</p></div>
+    <div class="stat"><div class="val" id="statRevenue">–</div><p>Revenue</p></div>
+    <div class="stat"><div class="val" id="statUsers">–</div><p>Users</p></div>
+  </div>
+
+  <!-- Products -->
+  <section class="section" id="productsSection">
+    <div class="container">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+        <div class="section-title"><span class="icon">📦</span> Products</div>
+        <div class="filters" id="catFilters"></div>
+      </div>
+      <div id="productList" class="product-grid"></div>
+      <div id="productPagination" style="display:flex; justify-content:center; gap:0.5rem; margin-top:1.5rem;"></div>
+    </div>
+  </section>
+
+  <!-- Analytics -->
+  <section class="section" id="analyticsSection" style="display:none;">
+    <div class="container">
+      <div class="section-title"><span class="icon">📊</span> Analytics Dashboard</div>
+      <div class="analytics-grid">
+        <div class="analytic-card"><div class="val" id="anTotalProducts">–</div><div class="lbl">Products</div></div>
+        <div class="analytic-card"><div class="val" id="anActive">–</div><div class="lbl">Active Products</div></div>
+        <div class="analytic-card"><div class="val" id="anInStock">–</div><div class="lbl">In Stock</div></div>
+        <div class="analytic-card"><div class="val" id="anInvValue">–</div><div class="lbl">Inventory Value</div></div>
+        <div class="analytic-card"><div class="val" id="anAvgPrice">–</div><div class="lbl">Avg Price</div></div>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap:1rem;">
+        <div class="chart-wrap"><div class="chart-placeholder"><div style="font-size:1.2rem; font-weight:600; margin-bottom:0.5rem;">Products by Category</div><div id="chartCategory" style="font-size:0.85rem;"></div></div></div>
+        <div class="chart-wrap"><div class="chart-placeholder"><div style="font-size:1.2rem; font-weight:600; margin-bottom:0.5rem;">Price Buckets</div><div id="chartPrice" style="font-size:0.85rem;"></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Orders -->
+  <section class="section" id="ordersSection" style="display:none;">
+    <div class="container">
+      <div class="section-title"><span class="icon">🧾</span> My Orders</div>
+      <div id="ordersList"></div>
+    </div>
+  </section>
+
+  <!-- Product Modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-grid">
+        <div>
+          <div class="modal-image" id="modalImage"></div>
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <h2 class="modal-title" id="modalName">Product</h2>
+              <div class="product-category" id="modalCat"></div>
+            </div>
+            <span class="badge-tag" id="modalFeatured" style="display:none;">Featured</span>
+          </div>
+          <p class="modal-desc" id="modalDesc"></p>
+          <div style="display:flex; flex-direction:column; gap:0.25rem; margin:1.25rem 0;">
+            <div class="meta-row"><span>Seller</span><span class="val" id="modalSeller">–</span></div>
+            <div class="meta-row"><span>Brand</span><span class="val" id="modalBrand">–</span></div>
+            <div class="meta-row"><span>Rating</span><span class="val" id="modalRating">– <span style="font-weight:400; color:var(--muted); font-size:0.9rem;">(0 reviews)</span></span></div>
+            <div class="meta-row"><span>Stock</span><span class="val stock" id="modalStock">–</span></div>
+          </div>
+          <div style="margin-bottom:1rem;">
+            <div style="font-weight:600; margin-bottom:0.35rem;">Price</div>
+            <div style="font-size:1.4rem; font-weight:700; color:var(--mongodb-dark);">₹<span id="modalPrice">0</span> <span id="modalOrig" style="font-size:0.9rem; font-weight:500; color:var(--muted); text-decoration:line-through; margin-left:0.4rem;"></span></div>
+          </div>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <span class="qty-val" id="modalQty">1</span>
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-primary" style="flex:1;" onclick="addToCartFromModal()">Add to Cart</button>
+            <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Sidebar -->
+  <div class="modal-overlay" id="cartModal">
+    <div class="modal" style="max-width:420px;">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div style="padding:2rem;">
+        <h2 style="margin-bottom:1rem; font-size:1.25rem; color:var(--mongodb-dark);">Shopping Cart</h2>
+        <div id="cartItems" class="cart-empty">Your cart is empty.</div>
+        <div id="cartSummary" class="cart-summary hidden">
+          <h3>Order Summary</h3>
+          <div class="summary-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
+          <div class="summary-row"><span>Shipping</span><span id="cartShipping">₹0</span></div>
+          <div class="summary-row total"><span>Total</span><span id="cartTotal">₹0</span></div>
+          <button class="btn btn-primary btn-sm" style="width:100%; margin-top:1rem;" onclick="goCheckout()">Checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal" style="max-width:420px;">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="auth-card" style="padding:0; box-shadow:none; border:none;">
+        <h2 id="authTitle">Sign In</h2>
+        <form id="authForm" onsubmit="handleAuth(event)">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="authEmail" required placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" id="authPassword" required placeholder="••••••••">
+          </div>
+          <div class="form-group hidden" id="authRoleGroup">
+            <label class="form-label">Role</label>
+            <select class="form-control" id="authRole">
+              <option value="customer">Customer</option>
+              <option value="seller">Seller</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm" style="width:100%;" id="authSubmitBtn">Sign In</button>
+        </form>
+        <div class="auth-switch" id="authToggle"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout -->
+  <section class="section" id="checkoutSection" style="display:none;">
+    <div class="container">
+      <div class="section-title"><span class="icon">✅</span> Checkout</div>
+      <div class="checkout-grid">
+        <div>
+          <form id="checkoutForm" onsubmit="placeOrder(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="ckName" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" id="ckEmail" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Shipping Address</label>
+              <input type="text" class="form-control" id="ckAddress" required placeholder="Street, City, State, ZIP">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Method</label>
+              <select class="form-control" id="ckPayment">
+                <option value="cod">Cash on Delivery</option>
+                <option value="upi">UPI</option>
+                <option value="card">Credit/Debit Card</option>
+                <option value="wallet">Wallet</option>
+              </select>
+            </div>
+            <p class="form-note">Demo checkout — no real payment is processed.</p>
+            <button type="submit" class="btn btn-primary btn-sm" style="width:100%; margin-top:1rem;">Place Order</button>
+          </form>
+        </div>
+        <div class="cart-summary">
+          <h3>Order Summary</h3>
+          <div class="summary-row" id="ckItems"></div>
+          <div class="summary-row total"><span>Total</span><span id="ckTotal">₹0</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>MongoDB Final Project — E-Commerce Backend Demo &nbsp;|&nbsp; Built with Node.js, Express, Mongoose &amp; MongoDB</p>
+  </footer>
+
+  <script>
+    const API = 'http://localhost:4000/api';
+    let cart = JSON.parse(localStorage.getItem('mongo_cart') || '[]');
+    let token = localStorage.getItem('mongo_token') || null;
+    let user = JSON.parse(localStorage.getItem('mongo_user') || 'null');
+    let currentProductId = null;
+    let modalQty = 1;
+
+    // ---------- Helpers ----------
+    function $el(id){ return document.getElementById(id); }
+    function showAlert(el, msg, type){
+      el.textContent = msg;
+      el.className = 'alert ' + (type==='error' ? 'alert-error' : 'alert-success') + ' show';
+      setTimeout(()=> el.classList.remove('show'), 4000);
+    }
+    function showSection(id){
+      document.querySelectorAll('section').forEach(s=> s.style.display = 'none');
+      document.querySelectorAll('.nav-link').forEach(a=> a.classList.remove('active'));
+      const el = $el(id + 'Section');
+      if(el) el.style.display = 'block';
+      const link = document.querySelector('.nav-link[data-nav="'+id+'"]');
+      if(link) link.classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+      if(id==='home'){ loadStats(); }
+      else if(id==='products'){ loadProducts(); loadCategories(); }
+      else if(id==='analytics'){ loadAnalytics(); }
+      else if(id==='orders'){ loadOrders(); }
+    }
+    function closeModal(){ document.querySelectorAll('.modal-overlay').forEach(m=> m.classList.remove('open')); }
+
+    // ---------- API ----------
+    async function fetchAPI(path, opts={}){
+      const headers = { 'Content-Type':'application/json', ...opts.headers };
+      if(token) headers['Authorization'] = 'Bearer ' + token;
+      const res = await fetch(API + path, { ...opts, headers });
+      let data;
+      try { data = await res.json(); } catch { data = {}; }
+      if(!res.ok){
+        const err = new Error(data.message || 'Request failed');
+        err.status = res.status; err.data = data; throw err;
+      }
+      return data;
+    }
+    function fmtMoney(n){ return Number(n||0).toLocaleString('en-IN'); }
+
+    // ---------- Auth ----------
+    $el('authBtn').onclick = ()=>{
+      $el('authTitle').textContent = user ? 'Account' : 'Sign In';
+      $el('authSubmitBtn').textContent = user ? 'Logout' : 'Sign In';
+      $el('authRoleGroup').classList.toggle('hidden', !!user);
+      $el('authEmail').value = user? user.email : '';
+      $el('authPassword').value = '';
+      document.querySelector('#authToggle').innerHTML = user
+        ? 'Logged in as <strong>'+user.name+'</strong>. <a href="#" onclick="logout()">Logout</a>'
+        : "Don't have an account? <a href='#' onclick='switchAuth()'>Register</a>";
+      closeModal();
+      $el('authModal').classList.add('open');
+    };
+    window.switchAuth = ()=>{
+      const isReg = !$el('authRoleGroup').classList.contains('hidden');
+      $el('authRoleGroup').classList.toggle('hidden', !isReg);
+      $el('authTitle').textContent = isReg ? 'Sign In' : 'Register';
+      $el('authSubmitBtn').textContent = isReg ? 'Sign In' : 'Register';
+      $el('authToggle').innerHTML = isReg
+        ? "Don't have an account? <a href='#' onclick='switchAuth()'>Register</a>"
+        : "Already have an account? <a href='#' onclick='switchAuth()'>Sign In</a>";
+    };
+    async function handleAuth(e){
+      e.preventDefault();
+      const email = $el('authEmail').value, password = $el('authPassword').value;
+      const isReg = !$el('authRoleGroup').classList.contains('hidden');
+      const role = $el('authRole').value;
+      try {
+        if(isReg){
+          await fetchAPI('/auth/register', { method:'POST', body: JSON.stringify({ name: email.split('@')[0], email, password, role }) });
+          showAlert($el('alertSuccess'), 'Registered. Please log in.', 'success');
+          switchAuth();
+        } else {
+          const data = await fetchAPI('/auth/login', { method:'POST', body: JSON.stringify({ email, password }) });
+          token = data.data.token; user = data.data.user;
+          localStorage.setItem('mongo_token', token); localStorage.setItem('mongo_user', JSON.stringify(user));
+          updateAuthUI();
+          closeModal();
+          showAlert($el('alertSuccess'), 'Welcome back, ' + user.name, 'success');
+        }
+      } catch(err){
+        showAlert($el('alertError'), err.data?.message || err.message, 'error');
+      }
+    }
+    function logout(){ token=null; user=null; localStorage.removeItem('mongo_token'); localStorage.removeItem('mongo_user'); updateAuthUI(); closeModal(); showSection('home'); }
+    function updateAuthUI(){
+      const btn = $el('authBtn'); const admin = $el('adminBtn');
+      if(user){
+        btn.textContent = 'Hello, ' + user.name;
+        if(user.role==='admin' || user.role==='seller') admin.style.display='inline-flex';
+      } else {
+        btn.textContent = 'Login'; admin.style.display='none';
+      }
+    }
+    updateAuthUI();
+
+    // ---------- Cart ----------
+    function saveCart(){ localStorage.setItem('mongo_cart', JSON.stringify(cart)); updateCartUI(); }
+    function updateCartUI(){
+      const btn = $el('cartBtn'); const badge = btn.querySelector('.cart-badge');
+      const count = cart.reduce((s,i)=>s+i.qty,0);
+      if(count>0){ if(!badge){ const b=document.createElement('span'); b.className='cart-badge'; btn.appendChild(b); } badge.textContent=count; }
+      else if(badge){ badge.remove(); }
+      const itemsEl = $el('cartItems'); const summaryEl = $el('cartSummary');
+      if(cart.length===0){ itemsEl.className='cart-empty'; itemsEl.textContent='Your cart is empty.'; summaryEl.classList.add('hidden'); return; }
+      itemsEl.className=''; itemsEl.innerHTML='';
+      let sub=0;
+      cart.forEach((item, idx)=>{
+        sub += item.price * item.qty;
+        const div = document.createElement('div');
+        div.className='cart-item';
+        div.innerHTML = `
+          <div class="cart-item-img"><img src="${item.image||'https://via.placeholder.com/80'}" alt=""></div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${escapeHtml(item.name)}</div>
+            <span class="cart-item-sku">${escapeHtml(item.sku||'')}</span>
+            <div class="cart-item-price">₹${fmtMoney(item.price)}</div>
+          </div>
+          <div class="qty-controls" style="margin-left:auto;">
+            <button class="qty-btn" onclick="changeCartQty(${idx},-1)">−</button>
+            <span class="qty-val">${item.qty}</span>
+            <button class="qty-btn" onclick="changeCartQty(${idx},1)">+</button>
+          </div>
+          <button class="btn btn-outline btn-sm" style="color:var(--danger); border-color:#FECACA;" onclick="removeCartItem(${idx)}">×</button>
+        `;
+        itemsEl.appendChild(div);
+      });
+      summaryEl.classList.remove('hidden');
+      $el('cartSubtotal').textContent = '₹'+fmtMoney(sub);
+      $el('cartShipping').textContent = sub>500 ? 'FREE' : '₹40';
+      const total = sub + (sub>500 || sub===0 ? 0 : 40);
+      $el('cartTotal').textContent = '₹'+fmtMoney(total);
+      $el('ckItems').innerHTML = cart.map(i=>`<span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(i.name)} ×${i.qty}</span>`).join('<br>') || '–';
+      $el('ckTotal').textContent = '₹'+fmtMoney(total);
+    }
+    $el('cartBtn').onclick = ()=>{ closeModal(); $el('cartModal').classList.add('open'); updateCartUI(); };
+    function addToCart(pid, name, price, sku, image, stock){
+      if(stock<=0){ showAlert($el('alertError'),'Out of stock','error'); return; }
+      const existing = cart.findIndex(i=> i.id===pid);
+      if(existing>=0){ if(cart[existing].qty < stock) cart[existing].qty++; else { showAlert($el('alertError'),'Max stock reached','error'); return; } }
+      else cart.push({ id:pid, name, price:Number(price), sku, image, qty:1 });
+      saveCart();
+      showAlert($el('alertSuccess'),'Added to cart','success');
+    }
+    function changeCartQty(idx, delta){
+      cart[idx].qty += delta;
+      if(cart[idx].qty<=0) cart.splice(idx,1);
+      saveCart();
+    }
+    function removeCartItem(idx){ cart.splice(idx,1); saveCart(); }
+    function goCheckout(){ closeModal(); showSection('checkout'); updateCartUI(); }
+
+    // ---------- Products ----------
+    let products = []; let categories = []; let currentPage=1; let currentLimit=12; let currentFilters={};
+    async function loadProducts(){
+      const grid=$el('productList'); grid.innerHTML='<div class="loading-center"><div class="spinner"></div><div>Loading products...</div></div>';
+      try {
+        const params = new URLSearchParams({ page: currentPage, limit: currentLimit, ...currentFilters });
+        const data = await fetchAPI('/products?'+params);
+        products = data.data || [];
+        const meta = data.meta || {};
+        renderProducts(products);
+        renderPagination(meta);
+      } catch(err){ grid.innerHTML='<div class="alert alert-error show">Failed to load products.</div>'; console.error(err); }
+    }
+    async function loadCategories(){
+      try {
+        const data = await fetchAPI('/products?limit=1&page=1');
+        // re-fetch to get all distinct categories via search-less approach is not supported; skip dynamic cats for simplicity
+        categories = ['Electronics','Fashion','Home','Sports','Books','Beauty'];
+      } catch(e){}
+      renderCategoryFilters();
+    }
+    function renderCategoryFilters(){
+      const box=$el('catFilters'); box.innerHTML='';
+      const all=document.createElement('button'); all.className='filter-pill active'; all.textContent='All';
+      all.onclick=()=>{ currentFilters={}; currentPage=1; loadProducts(); updatePills(); };
+      box.appendChild(all);
+      categories.forEach(c=>{
+        const b=document.createElement('button'); b.className='filter-pill'; b.textContent=c;
+        b.onclick=()=>{ currentFilters={category:c}; currentPage=1; loadProducts(); updatePills(); };
+        box.appendChild(b);
+      });
+      const inStock=document.createElement('button'); inStock.className='filter-pill'; inStock.textContent='In Stock';
+      inStock.onclick=()=>{ currentFilters={inStock:true}; currentPage=1; loadProducts(); updatePills(); };
+      box.appendChild(inStock);
+    }
+    function updatePills(){
+      const pills = $el('catFilters').querySelectorAll('.filter-pill');
+      const key = currentFilters.category ? 'category:'+currentFilters.category : currentFilters.inStock ? 'inStock' : 'All';
+      pills.forEach(p=>{ p.classList.toggle('active', p.textContent===key || (key==='All' && p.textContent==='All')); });
+    }
+    function renderProducts(list){
+      const grid=$el('productList'); grid.innerHTML='';
+      if(!list.length){ grid.innerHTML='<div style="grid-column:1/-1; text-align:center; color:var(--muted); padding:2rem;">No products found.</div>'; return; }
+      list.forEach(p=>{
+        const disc = p.discountPercentage>0;
+        const price = disc ? (p.discountedPrice||p.price) : p.price;
+        const orig = disc ? p.price : null;
+        const card = document.createElement('div');
+        card.className='product-card';
+        card.innerHTML = `
+          <div class="product-image">
+            ${p.images&&p.images[0] ? `<img src="${p.images[0]}" alt="${escapeHtml(p.name)}">` : `<div style="font-size:2.5rem;">📦</div>`}
+            ${p.isFeatured ? '<span class="badge-tag">Featured</span>' : ''}
+          </div>
+          <div class="product-info">
+            <div class="product-category">${escapeHtml(p.category||'')}</div>
+            <div class="product-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</div>
+            <div class="product-meta">
+              <div>
+                <div class="price">₹${fmtMoney(price)}${orig?'<span class="orig"> ₹'+fmtMoney(orig)+'</span>':''}</div>
+                <div class="stock ${!p.inStock?'out':''}">${p.inStock?'In Stock ('+p.stock+')':'Out of Stock'}</div>
+              </div>
+            </div>
+            <button class="add-to-cart" onclick="openProduct('${p._id}')" ${!p.inStock?'disabled':''}>
+              ${p.inStock?'Add to Cart':'Out of Stock'}
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+    function renderPagination(meta){
+      const box=$el('productPagination'); box.innerHTML='';
+      if(!meta || meta.pages<=1) return;
+      const btn=(label, page, disabled, active)=>{
+        const b=document.createElement('button'); b.className='btn btn-outline btn-sm'; b.textContent=label;
+        b.disabled=disabled; if(active){ b.style.background=var(--mongodb-dark); b.style.color='white'; }
+        if(!disabled) b.onclick=()=>{ currentPage=page; loadProducts(); };
+        return b;
+      };
+      box.appendChild(btn('Prev', currentPage-1, currentPage<=1));
+      for(let i=1;i<=meta.pages;i++){
+        if(i===1 || i===meta.pages || (i>=currentPage-1 && i<=currentPage+1)){
+          box.appendChild(btn(i, i, false, i===currentPage));
+        } else if(i===currentPage-2 || i===currentPage+2){
+          const d=document.createElement('span'); d.textContent='…'; d.style.padding='0.5rem'; box.appendChild(d);
+        }
+      }
+      box.appendChild(btn('Next', currentPage+1, currentPage>=meta.pages));
+    }
+    window.filterByCategory = (cat)=>{ currentFilters={category:cat}; currentPage=1; loadProducts(); updatePills(); };
+
+    // ---------- Product Modal ----------
+    window.openProduct = async (id)=>{
+      currentProductId = id; modalQty = 1;
+      try {
+        const data = await fetchAPI('/products/'+id);
+        const p = data.data;
+        $el('modalName').textContent = p.name;
+        $el('modalCat').textContent = p.category+' • '+p.brand;
+        $el('modalDesc').textContent = p.description;
+        $el('modalSeller').textContent = p.seller?.name || '–';
+        $el('modalBrand').textContent = p.brand || '–';
+        $el('modalRating').textContent = (p.rating||0).toFixed(1);
+        $el('modalStock').textContent = p.inStock ? ('In Stock ('+p.stock+')') : 'Out of Stock';
+        $el('modalStock').className = 'stock '+(p.inStock?'':'out');
+        $el('modalPrice').textContent = fmtMoney(p.discountedPrice||p.price);
+        $el('modalOrig').innerHTML = p.discountPercentage>0 ? '₹'+fmtMoney(p.price) : '';
+        $el('modalFeatured').style.display = p.isFeatured ? 'inline-flex' : 'none';
+        const imgDiv = $el('modalImage');
+        imgDiv.innerHTML = p.images&&p.images[0] ? `<img src="${p.images[0]}" alt="">` : `<div style="font-size:4rem;">📦</div>`;
+        $el('modalQty').textContent = '1';
+        closeModal();
+        $el('productModal').classList.add('open');
+      } catch(err){ showAlert($el('alertError'),'Could not load product','error'); }
+    };
+    window.changeQty = (d)=>{ modalQty = Math.max(1, modalQty + d); $el('modalQty').textContent = modalQty; };
+    window.addToCartFromModal = ()=>{
+      const p = products.find(x=> x._id===currentProductId);
+      if(!p) return;
+      addToCart(p._id, p.name, p.discountedPrice||p.price, p.sku, p.images&&p.images[0], p.stock);
+      closeModal();
+    };
+    window.closeModal = closeModal;
+
+    // ---------- Analytics ----------
+    async function loadAnalytics(){
+      try {
+        const data = await fetchAPI('/products/analytics/overview');
+        const a = data.data || {};
+        $el('anTotalProducts').textContent = (a.inventorySummary&&a.inventorySummary[0]&&a.inventorySummary[0].totalProducts) || '–';
+        $el('anActive').textContent = (a.inventorySummary&&a.inventorySummary[0]&&a.inventorySummary[0].activeProducts) || '–';
+        $el('anInStock').textContent = (a.inventorySummary&&a.inventorySummary[0]&&a.inventorySummary[0].inStockProducts) || '–';
+        $el('anInvValue').textContent = '₹'+fmtMoney((a.inventorySummary&&a.inventorySummary[0]&&a.inventorySummary[0].inventoryValue) || 0);
+        $el('anAvgPrice').textContent = '₹'+fmtMoney((a.inventorySummary&&a.inventorySummary[0]&&a.inventorySummary[0].avgPrice) || 0);
+        renderChart('chartCategory', a.byCategory||[], 'products');
+        renderChart('chartPrice', a.priceBuckets||[], 'bucket');
+      } catch(err){ console.error(err); }
+    }
+    function renderChart(id, items, type){
+      const box=$el(id); if(!box) return;
+      box.innerHTML='';
+      if(!items.length){ box.textContent='No data'; return; }
+      items.slice(0,6).forEach(it=>{
+        const label = type==='bucket' ? (it._id==='100000+'?'100000+':'₹'+(it._id||0)+'–') : it._id;
+        const bar = document.createElement('div');
+        bar.style.cssText='display:flex; align-items:center; gap:0.5rem; margin:0.5rem 0;';
+        bar.innerHTML = `<span style="font-size:0.8rem; width:110px; display:inline-block;">${escapeHtml(String(label))}</span>
+          <div style="flex:1; height:10px; background:#F1F5F9; border-radius:5px; overflow:hidden;">
+            <div style="height:100%; width:${Math.min(100, ((it.products||it.count||0)/Math.max(1,Math.max(...items.map(x=>x.products||x.count||0))))*100)}%; background:var(--mongodb-green);"></div>
+          </div>
+          <span style="font-size:0.8rem; color:var(--muted); width:30px; display:inline-block; text-align:right;">${it.products||it.count||0}</span>`;
+        box.appendChild(bar);
+      });
+    }
+
+    // ---------- Orders ----------
+    async function loadOrders(){
+      if(!user){ $el('ordersList').innerHTML='<div class="alert alert-error show">Please log in to view orders.</div>'; return; }
+      try {
+        const data = await fetchAPI('/orders');
+        const orders = data.data || [];
+        const box=$el('ordersList');
+        if(!orders.length){ box.innerHTML='<div class="cart-empty">No orders yet.</div>'; return; }
+        box.innerHTML='';
+        orders.forEach(o=>{
+          const div=document.createElement('div'); div.className='cart-item';
+          div.innerHTML=`
+            <div style="flex:1;">
+              <div class="cart-item-name">Order #${escapeHtml(o.orderNumber)}</div>
+              <div class="cart-item-sku" style="font-size:0.8rem;">${new Date(o.orderDate||o.createdAt).toLocaleDateString()}</div>
+              <div class="status-badge status-${o.status}">${o.status}</div>
+            </div>
+            <div class="cart-item-price">₹${fmtMoney(o.totalAmount)}</div>
+            <button class="btn btn-outline btn-sm" onclick="viewOrder('${o._id}')">Details</button>
+          `;
+          box.appendChild(div);
+        });
+      } catch(err){ console.error(err); }
+    }
+    window.viewOrder = (id)=>{ alert('Order detail view — order ID: '+id); };
+
+    // ---------- Checkout ----------
+    async function placeOrder(e){
+      e.preventDefault();
+      if(!user){ showAlert($el('alertError'),'Please log in','error'); $el('authBtn').click(); return; }
+      if(cart.length===0){ showAlert($el('alertError'),'Cart is empty','error'); return; }
+      const items = cart.map(i=>({ productId: i.id, quantity: i.qty }));
+      try {
+        await fetchAPI('/orders', {
+          method:'POST',
+          body: JSON.stringify({ items, paymentMethod: $el('ckPayment').value, shippingAddress: { street:$el('ckAddress').value, city:'', state:'', postalCode:'', country:'India' } })
+        });
+        cart=[]; saveCart();
+        showAlert($el('alertSuccess'),'Order placed successfully!','success');
+        showSection('orders');
+      } catch(err){ showAlert($el('alertError'), err.data?.message||err.message, 'error'); }
+    }
+
+    // ---------- Utils ----------
+    function escapeHtml(t){ if(t==null) return ''; const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
+
+    // ---------- Init ----------
+    document.querySelectorAll('.nav-link').forEach(a=>{
+      a.addEventListener('click', (e)=>{ e.preventDefault(); showSection(a.dataset.nav); });
+    });
+    $el('authForm').addEventListener('submit', handleAuth);
+    $el('checkoutForm').addEventListener('submit', placeOrder);
+    showSection('home');
+  </script>
+</body>
+</html>
