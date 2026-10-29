@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MongoDB Indexes Lab — Project Preview</title>
+  <style>
+    :root {
+      --mongodb-green: #00ED64;
+      --mongodb-dark: #004444;
+      --accent-blue: #0086FF;
+      --text: #2B2B2B;
+      --muted: #6B7280;
+      --bg: #F5F7FA;
+      --card: #FFFFFF;
+      --border: #E5E7EB;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+    }
+    header {
+      background: linear-gradient(135deg, var(--mongodb-dark) 0%, #0A192F 100%);
+      color: white;
+      padding: 3rem 1.5rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2.25rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+    header .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+    header .badges {
+      margin-top: 1rem;
+      display: inline-flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    header .badge {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      padding: 0.35rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+    .section {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+    .section h2 {
+      font-size: 1.4rem;
+      margin-bottom: 1.25rem;
+      color: var(--mongodb-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section h2 .icon {
+      color: var(--mongodb-green);
+    }
+    .intro p {
+      margin-bottom: 1rem;
+      font-size: 1.05rem;
+    }
+    .architecture {
+      background: #F0FDF4;
+      border-left: 5px solid var(--mongodb-green);
+      padding: 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1.5rem;
+    }
+    .architecture pre {
+      background: #111827;
+      color: #00ED64;
+      padding: 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      overflow-x: auto;
+    }
+    .architecture code {
+      font-family: 'Courier New', monospace;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      background: var(--card);
+    }
+    .card h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--mongodb-dark);
+    }
+    .card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .card .creation {
+      background: #F3F4F6;
+      padding: 0.5rem;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: var(--mongodb-dark);
+      border: 1px solid #E5E7EB;
+    }
+    .index-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .index-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      background: var(--card);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .index-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .index-item h4 {
+      color: var(--mongodb-dark);
+      margin-bottom: 0.4rem;
+      font-size: 1rem;
+    }
+    .index-item .file {
+      font-size: 0.75rem;
+      color: var(--accent-blue);
+      margin-bottom: 0.5rem;
+      font-family: monospace;
+    }
+    .index-item .impact {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      text-align: left;
+    }
+    th {
+      background: var(--mongodb-dark);
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #F9FAFB;
+    }
+    .highlight {
+      color: var(--mongodb-green);
+      font-weight: 700;
+    }
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+    }
+    .prereq {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .prereq-item {
+      background: #1F2937;
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .prereq-item b {
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+    .quick-start {
+      background: #111827;
+      color: #E5E7EB;
+      padding: 1.25rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+    .quick-start .step {
+      color: var(--mongodb-green);
+      font-weight: 700;
+    }
+    .author {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🍃 MongoDB Indexes Lab</h1>
+    <div class="subtitle">Performance Analysis & Benchmarking of 9 MongoDB Index Types</div>
+    <div class="badges">
+      <span class="badge">MongoDB 8.2+</span>
+      <span class="badge">mongosh 2.12+</span>
+      <span class="badge">5,000 synthetic records</span>
+      <span class="badge">MIT License</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="section intro">
+      <h2><span class="icon">📋</span>Project Overview</h2>
+      <p>
+        This laboratory project is a complete, practical implementation and benchmarking suite for
+        <strong>MongoDB Indexing Strategies</strong>. It demonstrates how indexes transform query performance
+        from <span class="highlight">COLLSCAN (Collection Scan — O(N))</span> to
+        <span class="highlight">IXSCAN (Index Scan — O(log N))</span> across 5,000 synthetic e-commerce records.
+      </p>
+      <p>
+        The pipeline generates realistic product data across 10 categories and 10 brands, with nested seller info,
+        GeoJSON coordinates, tag arrays, sparse emails, and discount fields — then measures execution statistics
+        (<code>executionStats</code>) before and after indexing.
+      </p>
+
+      <div class="architecture">
+        <strong>Query Flow Architecture</strong>
+        <pre>Query Request
+      │
+      ▼
+┌───────────────┐
+│ Query Planner │
+└───────┬───────┘
+        │
+ Index Exists?
+ ├───── Yes ────► [ IXSCAN ] ──► [ FETCH ] ──► Rapid Result (O(log N))
+ │
+ └───── No  ────► [ COLLSCAN ] ──────────────► Slow Scan of ALL Documents (O(N))</pre>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2><span class="icon">📁</span>Repository Structure</h2>
+      <pre style="font-size: 0.85rem; background: #F3F4F6; padding: 1rem; border-radius: 6px; overflow-x: auto; font-family: monospace;">
+mongodb-indexes/
+├── .gitignore
+├── package.json              # NPM script definitions
+├── README.md                 # Main project guide
+├── Indexes.docx              # Original laboratory curriculum
+├── AGGREGATION PIPELINES.docx
+├── CRUD Operations.docx
+├── scripts/
+│   ├── 01_seed_data.js       # Seeds 5,000 documents
+│   ├── 02_simple_index.js    # Single field index on 'price'
+│   ├── 03_compound_index.js  # Compound index (category + price)
+│   ├── 04_multikey_index.js  # Multikey index on 'tags' array
+│   ├── 05_text_index.js      # Full-text search index
+│   ├── 06_hashed_index.js    # Hashed index on 'productId'
+│   ├── 07_geospatial_index.js # 2dsphere GeoJSON index
+│   ├── 08_unique_sparse_index.js # Unique + Sparse index on email
+│   ├── 09_partial_index.js   # Partial index (filtered)
+│   ├── 10_wildcard_index.js  # Wildcard index ("$**")
+│   └── 11_benchmark_runner.js # Automated benchmark suite
+├── docs/
+│   ├── index_types_guide.md
+│   ├── performance_comparison.md
+│   └── esr_rule_and_best_practices.md
+└── test/
+    └── run_tests.bat
+      </pre>
+    </div>
+
+    <div class="section">
+      <h2><span class="icon">⚙️</span>Index Types Covered</h2>
+      <div class="index-list">
+        <div class="index-item">
+          <h4>1. Simple (Single Field)</h4>
+          <div class="file">scripts/02_simple_index.js</div>
+          <p>Index on a single scalar field (<code>price</code>).</p>
+          <div class="creation">db.products.createIndex({ price: 1 });</div>
+          <div class="impact">5,000 → 2,323 docs examined (53.5% skipped)</div>
+        </div>
+        <div class="index-item">
+          <h4>2. Compound Index</h4>
+          <div class="file">scripts/03_compound_index.js</div>
+          <p>Index on <code>category</code> (asc) + <code>price</code> (desc), following the ESR rule.</p>
+          <div class="creation">db.products.createIndex({ category: 1, price: -1 });</div>
+          <div class="impact">95.2% reduction (5,000 → 240 docs)</div>
+        </div>
+        <div class="index-item">
+          <h4>3. Multikey Index</h4>
+          <div class="file">scripts/04_multikey_index.js</div>
+          <p>Automatic index on array field <code>tags</code>; one entry per array element.</p>
+          <div class="creation">db.products.createIndex({ tags: 1 });</div>
+          <div class="impact">Direct array lookup without $unwind</div>
+        </div>
+        <div class="index-item">
+          <h4>4. Text Index</h4>
+          <div class="file">scripts/05_text_index.js</div>
+          <p>Full-text tokenization, stemming, and stop-word filtering on <code>description</code>.</p>
+          <div class="creation">db.products.createIndex({ description: "text" });</div>
+          <div class="impact">5,000 → 500 docs (TEXT_MATCH stage)</div>
+        </div>
+        <div class="index-item">
+          <h4>5. Hashed Index</h4>
+          <div class="file">scripts/06_hashed_index.js</div>
+          <p>MD5 64-bit hash on <code>productId</code>; even shard distribution.</p>
+          <div class="creation">db.products.createIndex({ productId: "hashed" });</div>
+          <div class="impact">1 key + 1 doc examined out of 5,000 (100% precision)</div>
+        </div>
+        <div class="index-item">
+          <h4>6. Geospatial (2dsphere)</h4>
+          <div class="file">scripts/07_geospatial_index.js</div>
+          <p>Spherical geometry queries on GeoJSON <code>Point</code> coordinates.</p>
+          <div class="creation">db.products.createIndex({ location: "2dsphere" });</div>
+          <div class="impact">GEO_NEAR_2DSPHERE stage with $maxDistance</div>
+        </div>
+        <div class="index-item">
+          <h4>7. Unique & Sparse</h4>
+          <div class="file">scripts/08_unique_sparse_index.js</div>
+          <p>Unique email constraint; sparse index skips documents missing the field.</p>
+          <div class="creation">db.products.createIndex({ email: 1 }, { unique: true, sparse: true });</div>
+          <div class="impact">Prevents duplicate null collisions</div>
+        </div>
+        <div class="index-item">
+          <h4>8. Partial Index</h4>
+          <div class="file">scripts/09_partial_index.js</div>
+          <p>Indexes only documents matching <code>partialFilterExpression</code>; saves RAM/disk.</p>
+          <div class="creation">createIndex({ price: 1 }, { partialFilterExpression: { isActive: true } });</div>
+          <div class="impact">5,000 → 1,850 docs examined</div>
+        </div>
+        <div class="index-item">
+          <h4>9. Wildcard Index</h4>
+          <div class="file">scripts/10_wildcard_index.js</div>
+          <p>Dynamically indexes arbitrary/polymorphic fields using <code>"$**"</code>.</p>
+          <div class="creation">db.products.createIndex({ "$**": 1 });</div>
+          <div class="impact">5,000 → 500 docs examined</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2><span class="icon">📊</span>Performance Benchmark Results</h2>
+      <p>Actual metrics from <code>scripts/11_benchmark_runner.js</code> on 5,000 documents:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Index Scenario</th>
+            <th>Stage Before</th>
+            <th>Stage After</th>
+            <th>Docs Before</th>
+            <th>Docs After</th>
+            <th>Keys Examined</th>
+            <th>Docs Skipped</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1. Simple (Single)</td><td>COLLSCAN</td><td>FETCH</td><td>5,000</td><td>2,323</td><td>2,323</td><td class="highlight">53.5%</td></tr>
+          <tr><td>2. Compound</td><td>COLLSCAN</td><td>FETCH</td><td>5,000</td><td>240</td><td>240</td><td class="highlight">95.2%</td></tr>
+          <tr><td>3. Multikey (Array)</td><td>COLLSCAN</td><td>FETCH</td><td>5,000</td><td>1,250</td><td>1,250</td><td class="highlight">75.0%</td></tr>
+          <tr><td>4. Text Search</td><td>COLLSCAN</td><td>TEXT_MATCH</td><td>5,000</td><td>500</td><td>500</td><td class="highlight">90.0%</td></tr>
+          <tr><td>5. Hashed</td><td>COLLSCAN</td><td>FETCH</td><td>5,000</td><td>1</td><td>1</td><td class="highlight">100.0%</td></tr>
+          <tr><td>6. Geospatial (2dsphere)</td><td>COLLSCAN</td><td>GEO_NEAR_2DSPHERE</td><td>5,000</td><td>551</td><td>657</td><td class="highlight">89.0%</td></tr>
+          <tr><td>7. Partial Index</td><td>COLLSCAN</td><td>FETCH</td><td>5,000</td><td>1,850</td><td>1,850</td><td class="highlight">63.0%</td></tr>
+          <tr><td>8. Wildcard ($**)</td><td>COLLSCAN</td><td>FETCH</td><td>5,000</td><td>500</td><td>500</td><td class="highlight">90.0%</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top: 1rem;">
+        <p><strong>Key Takeaways:</strong></p>
+        <ul style="margin-left: 1.25rem; margin-top: 0.5rem;">
+          <li><strong>Compound Index:</strong> 95.2% reduction — the single biggest win, returning 240 target records without wasted reads.</li>
+          <li><strong>Hashed Index:</strong> Instant O(1) equality resolution — 1 key and 1 document out of 5,000.</li>
+          <li><strong>Geospatial & Text:</strong> Enable search stages (<code>GEO_NEAR_2DSPHERE</code>, <code>TEXT_MATCH</code>) that are impractical with plain collection scans.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2><span class="icon">🚀</span>Quick Start</h2>
+      <div class="prereq">
+        <div class="prereq-item"><b>MongoDB Server</b>v6.0–8.x on port 27017</div>
+        <div class="prereq-item"><b>mongosh</b>MongoDB Shell 2.12+</div>
+        <div class="prereq-item"><b>Node.js</b>v18+ (optional, for npm scripts)</div>
+      </div>
+      <div class="quick-start">
+        <span class="step">Step 1 — Seed data:</span> mongosh ecomDB scripts/01_seed_data.js<br>
+        <span class="step">Step 2 — Run benchmark:</span> mongosh ecomDB scripts/11_benchmark_runner.js<br>
+        <span class="step">Step 3 — Individual demo:</span> mongosh ecomDB scripts/02_simple_index.js
+      </div>
+      <div class="author">Author: Sunny Kumar Dev &nbsp;|&nbsp; License: MIT</div>
+    </div>
+
+    <footer class="footer">
+      <p>Prepared for tutor review &nbsp;•&nbsp; MongoDB Indexes Practical Lab &nbsp;•&nbsp; Generated preview</p>
+    </footer>
+  </div>
+
+</body>
+</html>
