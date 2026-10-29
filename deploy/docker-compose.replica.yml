@@ -1,0 +1,43 @@
+version: '3.9'
+
+# Three-node MongoDB replica set for testing replication & failover.
+# Start with: docker compose -f deploy/docker-compose.replica.yml up -d
+# Initialize with: docker exec -it mongo-rs0 mongosh --eval "rs.initiate({...})"
+
+services:
+  mongo1:
+    image: mongo:7
+    container_name: mongo-rs0
+    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo1_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', 'db.adminCommand("ping")']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo2:
+    image: mongo:7
+    container_name: mongo-rs1
+    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
+    ports:
+      - '27018:27017'
+    volumes:
+      - mongo2_data:/data/db
+
+  mongo3:
+    image: mongo:7
+    container_name: mongo-rs2
+    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
+    ports:
+      - '27019:27017'
+    volumes:
+      - mongo3_data:/data/db
+
+volumes:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
